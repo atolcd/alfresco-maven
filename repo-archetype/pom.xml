@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.atolcd.alfresco</groupId>
+    <artifactId>project</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>repo-archetype</artifactId>
+  <packaging>maven-archetype</packaging>
+
+  <name>repo-archetype</name>
+  <description>Alfresco repository module archetype</description>
+
+  <properties>
+    <it.alfrescoVersion>4.1.2</it.alfrescoVersion>
+  </properties>
+
+  <dependencies>
+    <!--
+      Utilise les mirroirs/repositories du build courant
+      pour résoudre les dépendances des tests d'intégration.
+    -->
+    <dependency>
+      <groupId>org.alfresco.enterprise</groupId>
+      <artifactId>alfresco-repository</artifactId>
+      <version>${it.alfrescoVersion}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <excludes>
+          <exclude>**/.gitkeep</exclude>
+        </excludes>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>${basedir}/src/test/resources</directory>
+        <excludes>
+          <exclude>**/.gitkeep</exclude>
+        </excludes>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+    <plugins>
+      <!--
+        Utilise les mirroirs/repositories du build courant
+        pour résoudre les dépendances des tests d'intégration.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>resolve</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <useDefaultDelimiters>false</useDefaultDelimiters>
+          <delimiters>
+            <delimiter>@</delimiter>
+          </delimiters>
+          <includeEmptyDirs>true</includeEmptyDirs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

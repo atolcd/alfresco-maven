@@ -70,6 +70,9 @@ public class AmpMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project.basedir}/src/main/alfresco-webscripts")
   private File alfrescoWebscriptsDirectory;
 
+  @Parameter(defaultValue = "${project.basedir}/src/main/licenses")
+  private File licensesDirectory;
+
   @Parameter(defaultValue = "${project.build.directory}/${project.groupId}.${project.artifactId}-${project.version}.jar")
   private File jarFile;
 
@@ -169,6 +172,12 @@ public class AmpMojo extends AbstractMojo {
     if (alfrescoWebscriptsDirectory.exists()) {
       getLog().info("Adding webscripts overrides");
       zipArchiver.addDirectory(alfrescoWebscriptsDirectory, "config/alfresco/templates/webscripts/org/alfresco/");
+    }
+
+    // Licenses
+    if (licensesDirectory.exists()) {
+      getLog().info("Adding licenses");
+      zipArchiver.addDirectory(licensesDirectory, "licenses/");
     }
 
     // JAR file

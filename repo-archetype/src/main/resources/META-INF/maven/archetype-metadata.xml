@@ -17,7 +17,7 @@
       <directory>src/main/config</directory>
     </fileSet>
     <fileSet encoding="UTF-8">
-      <directory>src/main/resources</directory>
+      <directory>src/main/resources/alfresco/messages</directory>
     </fileSet>
     <fileSet encoding="UTF-8">
       <directory>src/main/web</directory>

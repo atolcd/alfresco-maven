@@ -12,7 +12,13 @@
       </includes>
     </fileSet>
     <fileSet encoding="UTF-8">
-      <directory>src/main/resources</directory>
+      <directory>src/main/resources/messages</directory>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/resources/site-webscripts</directory>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/resources/web-extension</directory>
     </fileSet>
     <fileSet encoding="UTF-8">
       <directory>src/main/web</directory>

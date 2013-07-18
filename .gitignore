@@ -1,1 +1,4 @@
+# Help for gitignore see
+# https://help.github.com/articles/ignoring-files#global-gitignore and
+# https://github.com/github/gitignore/tree/master/Global
 target/

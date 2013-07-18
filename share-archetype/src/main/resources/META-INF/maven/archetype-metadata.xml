@@ -25,8 +25,7 @@
     </fileSet>
   </fileSets>
   <requiredProperties>
-    <requiredProperty key="alfrescoVersion">
-      <defaultValue>4.1.2</defaultValue>
-    </requiredProperty>
+    <requiredProperty key="alfrescoVersion" />
+    <requiredProperty key="projectDescription"/>
   </requiredProperties>
 </archetype-descriptor>

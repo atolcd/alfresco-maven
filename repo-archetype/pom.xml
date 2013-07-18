@@ -14,7 +14,7 @@
   <description>Alfresco repository module archetype</description>
 
   <properties>
-    <it.alfrescoVersion>4.1.2</it.alfrescoVersion>
+    <it.alfrescoVersion>4.1.4</it.alfrescoVersion>
   </properties>
 
   <dependencies>

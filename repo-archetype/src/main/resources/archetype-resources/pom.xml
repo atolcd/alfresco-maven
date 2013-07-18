@@ -6,6 +6,7 @@
   <groupId>${groupId}</groupId>
   <artifactId>${artifactId}</artifactId>
   <version>${version}</version>
+  <description>${projectDescription}</description>
   <packaging>amp</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -58,6 +59,7 @@
       <resource>
         <directory>src/main/config</directory>
         <targetPath>alfresco/module/${dollar}{project.groupId}.${dollar}{project.artifactId}</targetPath>
+        <filtering>true</filtering>
       </resource>
     </resources>
   </build>

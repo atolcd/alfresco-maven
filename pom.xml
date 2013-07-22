@@ -49,6 +49,7 @@
   </issueManagement>
   <scm>
     <connection>scm:git:https://github.com/atolcd/alfresco-maven.git</connection>
+    <developerConnection>scm:git:https://github.com/atolcd/alfresco-maven.git</developerConnection>
     <url>https://github.com/atolcd/alfresco-maven</url>
   </scm>
 

@@ -30,6 +30,7 @@
         <version>@project.version@</version>
         <extensions>true</extensions>
         <configuration>
+          <shareModule>true</shareModule>
           <moduleProperties>
             <property>
               <name>module.title</name>

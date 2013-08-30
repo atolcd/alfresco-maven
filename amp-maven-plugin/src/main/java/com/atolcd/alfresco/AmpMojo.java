@@ -208,11 +208,13 @@ public class AmpMojo extends AbstractMojo {
       }
     }
 
-    zipArchiver.setDestFile(new File(targetDirectory, project.getBuild().getFinalName() + ".amp"));
+    File ampFile = new File(targetDirectory, project.getBuild().getFinalName() + ".amp");
+    zipArchiver.setDestFile(ampFile);
     try {
       zipArchiver.createArchive();
     } catch (IOException e) {
       throw new MojoExecutionException("Could not build the amp file", e);
     }
+    project.getArtifact().setFile(ampFile);
   }
 }

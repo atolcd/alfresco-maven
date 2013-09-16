@@ -66,6 +66,7 @@
     <resources>
       <resource>
         <directory>src/main/resources</directory>
+        <targetPath>alfresco</targetPath>
       </resource>
     </resources>
   </build>

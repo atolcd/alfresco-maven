@@ -35,7 +35,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Amp-packaging goal
- * 
+ *
  */
 @Mojo(name = "amp", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 @Execute(phase = LifecyclePhase.PACKAGE)
@@ -58,6 +58,9 @@ public class AmpMojo extends AbstractMojo {
   @Parameter(property = "moduleProperties")
   private Properties moduleProperties;
 
+  @Parameter(property = "filemappingProperties")
+  private Properties filemappingProperties;
+
   @Parameter(defaultValue = "${project.basedir}/src/main/web")
   private File webDirectory;
 
@@ -72,6 +75,9 @@ public class AmpMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "${project.basedir}/src/main/licenses")
   private File licensesDirectory;
+
+  @Parameter
+  private File rootDirectory;
 
   @Parameter(defaultValue = "${project.build.directory}/${project.groupId}.${project.artifactId}-${project.version}.jar")
   private File jarFile;
@@ -112,11 +118,18 @@ public class AmpMojo extends AbstractMojo {
     }
     zipArchiver.addFile(modulePropertiesFile, "module.properties");
 
-    // Share module : File-mapping properties file
+    // File-mapping properties file (automatically created for Share projects)
     if (shareModule) {
-      Properties filemappingProperties = new Properties();
-      filemappingProperties.put("include.default", "true");
+      if (filemappingProperties == null) {
+        filemappingProperties = new Properties();
+      }
       filemappingProperties.put("/web", "/");
+    }
+    if (filemappingProperties != null && !filemappingProperties.isEmpty()) {
+      if (!filemappingProperties.containsKey("include.default")) {
+        filemappingProperties.put("include.default", "true");
+      }
+
       File filemappingPropertiesFile = new File(targetDirectory, "file-mapping.properties");
       try {
         fos = new FileOutputStream(filemappingPropertiesFile);
@@ -178,6 +191,12 @@ public class AmpMojo extends AbstractMojo {
     if (licensesDirectory.exists()) {
       getLog().info("Adding licenses");
       zipArchiver.addDirectory(licensesDirectory, "licenses/");
+    }
+
+    // Root
+    if (rootDirectory != null && rootDirectory.exists()) {
+      getLog().info("Adding root directory files");
+      zipArchiver.addDirectory(rootDirectory, "/");
     }
 
     // JAR file

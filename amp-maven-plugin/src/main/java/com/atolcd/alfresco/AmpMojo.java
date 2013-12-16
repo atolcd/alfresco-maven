@@ -196,7 +196,7 @@ public class AmpMojo extends AbstractMojo {
     // Root
     if (rootDirectory != null && rootDirectory.exists()) {
       getLog().info("Adding root directory files");
-      zipArchiver.addDirectory(rootDirectory, "/");
+      zipArchiver.addDirectory(rootDirectory, "");
     }
 
     // JAR file

@@ -23,6 +23,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
@@ -35,7 +36,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Amp-packaging goal
- *
  */
 @Mojo(name = "amp", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.RUNTIME)
 @Execute(phase = LifecyclePhase.PACKAGE)
@@ -48,6 +48,9 @@ public class AmpMojo extends AbstractMojo {
 
   @Component
   private MavenProject project;
+
+  @Component
+  private MavenProjectHelper mavenProjectHelper;
 
   @Component
   protected MavenSession session;
@@ -93,6 +96,8 @@ public class AmpMojo extends AbstractMojo {
 
   @Parameter(defaultValue = "false")
   private boolean shareModule;
+
+  public AmpMojo() {}
 
   public void execute() throws MojoExecutionException {
     // Module properties
@@ -156,7 +161,7 @@ public class AmpMojo extends AbstractMojo {
       }
 
       resourcesExecution = new MavenResourcesExecution(project.getResources(), targetConfigDirectory, project,
-          encoding, null, Collections.<String> emptyList(), session);
+          encoding, null, Collections.<String>emptyList(), session);
       resourcesFiltering.filterResources(resourcesExecution);
     } catch (MavenFilteringException e) {
       throw new MojoExecutionException("Could not filter resources", e);
@@ -203,13 +208,14 @@ public class AmpMojo extends AbstractMojo {
     MavenArchiver archiver = new MavenArchiver();
     archiver.setArchiver(jarArchiver);
     archiver.setOutputFile(jarFile);
-    jarArchiver.addDirectory(outputDirectory, new String[] { "**/*.class" }, null);
+    jarArchiver.addDirectory(outputDirectory, new String[]{"**/*.class"}, null);
     MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
     try {
       archiver.createArchive(session, project, archive);
     } catch (Exception e) {
       throw new MojoExecutionException("Could not build the jar file", e);
     }
+    mavenProjectHelper.attachArtifact(project, "jar", jarFile);
 
     if (jarFile.exists()) {
       getLog().info("Adding JAR file");
@@ -219,7 +225,7 @@ public class AmpMojo extends AbstractMojo {
     // Dependencies (mapped to the AMP file "lib" directory)
     getLog().info("Adding JAR dependencies");
     Set<Artifact> artifacts = project.getArtifacts();
-    for (Iterator<Artifact> iter = artifacts.iterator(); iter.hasNext();) {
+    for (Iterator<Artifact> iter = artifacts.iterator(); iter.hasNext(); ) {
       Artifact artifact = (Artifact) iter.next();
       ScopeArtifactFilter filter = new ScopeArtifactFilter(Artifact.SCOPE_RUNTIME);
       if (!artifact.isOptional() && filter.include(artifact) && "jar".equals(artifact.getType())) {

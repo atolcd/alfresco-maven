@@ -49,6 +49,10 @@
       <artifactId>maven-shared-utils</artifactId>
       <version>0.4</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

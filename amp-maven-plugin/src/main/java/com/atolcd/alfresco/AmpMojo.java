@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
@@ -107,11 +109,17 @@ public class AmpMojo extends AbstractMojo {
     getLog().info("Processing module.properties file");
     moduleProperties.put("module.id", project.getGroupId() + "." + project.getArtifactId());
 
-    String finalVersion = project.getVersion();
-    if (ArtifactUtils.isSnapshot(finalVersion)) {
-      getLog().info("Stripping \"-SNAPSHOT\" from version number");
-      finalVersion = finalVersion.replace("-" + Artifact.SNAPSHOT_VERSION, "");
+    String projectVersion = project.getVersion();
+    String finalVersion = VersionUtil.getFinalVersion(projectVersion);
+    if (finalVersion == null) {
+      // No valid version found in finalVersion
+      throw new MojoExecutionException("Invalid version \"" + projectVersion + "\", not matching \"[0..9]+(\\.[0..9]+)*\"");
     }
+    if (! projectVersion.equals(finalVersion)) {
+      getLog().info("Filtering version to have a valid alfresco version");
+    }
+    getLog().info("Using final version " + finalVersion);
+
     moduleProperties.put("module.version", finalVersion);
 
     File modulePropertiesFile = new File(targetDirectory, "module.properties");

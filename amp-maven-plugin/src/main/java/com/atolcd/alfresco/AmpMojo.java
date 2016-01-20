@@ -1,5 +1,27 @@
 package com.atolcd.alfresco;
 
+import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.archiver.MavenArchiver;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
+import org.apache.maven.shared.model.fileset.FileSet;
+import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.apache.maven.shared.utils.io.IOUtil;
+import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.archiver.zip.ZipArchiver;
+import org.codehaus.plexus.util.ReaderFactory;
+import org.codehaus.plexus.util.StringUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,37 +29,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.maven.archiver.MavenArchiveConfiguration;
-import org.apache.maven.archiver.MavenArchiver;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectHelper;
-import org.apache.maven.project.artifact.AttachedArtifact;
-import org.apache.maven.shared.filtering.MavenFilteringException;
-import org.apache.maven.shared.filtering.MavenResourcesExecution;
-import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-import org.apache.maven.shared.utils.io.IOUtil;
-import org.codehaus.plexus.archiver.Archiver;
-import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.codehaus.plexus.archiver.zip.ZipArchiver;
-import org.codehaus.plexus.util.ReaderFactory;
-import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Amp-packaging goal
@@ -102,7 +93,8 @@ public class AmpMojo extends AbstractMojo {
   @Parameter(defaultValue = "false")
   private boolean shareModule;
 
-  public AmpMojo() {}
+  public AmpMojo() {
+  }
 
   public void execute() throws MojoExecutionException {
     // Module properties
@@ -115,7 +107,7 @@ public class AmpMojo extends AbstractMojo {
       // No valid version found in finalVersion
       throw new MojoExecutionException("Invalid version \"" + projectVersion + "\", not matching \"[0..9]+(\\.[0..9]+)*\"");
     }
-    if (! projectVersion.equals(finalVersion)) {
+    if (!projectVersion.equals(finalVersion)) {
       getLog().info("Filtering version to have a valid alfresco version");
     }
     getLog().info("Using final version " + finalVersion);
@@ -133,30 +125,6 @@ public class AmpMojo extends AbstractMojo {
       IOUtil.close(fos);
     }
     zipArchiver.addFile(modulePropertiesFile, "module.properties");
-
-    // File-mapping properties file (automatically created for Share projects)
-    if (shareModule) {
-      if (filemappingProperties == null) {
-        filemappingProperties = new Properties();
-      }
-      filemappingProperties.put("/web", "/");
-    }
-    if (filemappingProperties != null && !filemappingProperties.isEmpty()) {
-      if (!filemappingProperties.containsKey("include.default")) {
-        filemappingProperties.put("include.default", "true");
-      }
-
-      File filemappingPropertiesFile = new File(targetDirectory, "file-mapping.properties");
-      try {
-        fos = new FileOutputStream(filemappingPropertiesFile);
-        filemappingProperties.store(fos, null);
-      } catch (IOException e) {
-        throw new MojoExecutionException("Could not process file-mapping.properties", e);
-      } finally {
-        IOUtil.close(fos);
-      }
-      zipArchiver.addFile(filemappingPropertiesFile, "file-mapping.properties");
-    }
 
     // Alfresco configuration files
     // Mapped from configured resources to their respective target paths
@@ -219,7 +187,7 @@ public class AmpMojo extends AbstractMojo {
     MavenArchiver archiver = new MavenArchiver();
     archiver.setArchiver(jarArchiver);
     archiver.setOutputFile(jarFile);
-    jarArchiver.addDirectory(outputDirectory, new String[]{"**/*.class"}, null);
+    jarArchiver.addDirectory(outputDirectory, new String[] { "**/*.class" }, new String[] { "org/alfresco/**/*.class" });
     MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
     try {
       archiver.createArchive(session, project, archive);
@@ -233,6 +201,25 @@ public class AmpMojo extends AbstractMojo {
       zipArchiver.addFile(jarFile, "lib/" + jarFile.getName());
     }
 
+    // Alfresco Java overrides
+    getLog().info("Adding Alfresco Java overrides");
+    FileSet alfrescoJava = new FileSet();
+    alfrescoJava.setDirectory(outputDirectory.getAbsolutePath());
+    alfrescoJava.addInclude("org/alfresco/**/*.class");
+    alfrescoJava.addExclude("**/*");
+    FileSetManager fileSetManager = new FileSetManager();
+    fileSetManager.getIncludedFiles(alfrescoJava);
+    zipArchiver.addDirectory(outputDirectory, "WEB-INF/classes/", new String[] { "org/alfresco/**/*.class" }, null);
+    if (fileSetManager.getIncludedFiles(alfrescoJava).length > 0) {
+      if (filemappingProperties == null) {
+        filemappingProperties = new Properties();
+      }
+
+      if (!filemappingProperties.containsKey("/WEB-INF")) {
+        filemappingProperties.put("/WEB-INF", "/WEB-INF");
+      }
+    }
+
     // Dependencies (mapped to the AMP file "lib" directory)
     getLog().info("Adding JAR dependencies");
     Set<Artifact> artifacts = project.getArtifacts();
@@ -242,6 +229,30 @@ public class AmpMojo extends AbstractMojo {
       if (!artifact.isOptional() && filter.include(artifact) && "jar".equals(artifact.getType())) {
         zipArchiver.addFile(artifact.getFile(), "lib/" + artifact.getFile().getName());
       }
+    }
+
+    // File-mapping properties file (automatically created for Share projects)
+    if (shareModule) {
+      if (filemappingProperties == null) {
+        filemappingProperties = new Properties();
+      }
+      filemappingProperties.put("/web", "/");
+    }
+    if (filemappingProperties != null && !filemappingProperties.isEmpty()) {
+      if (!filemappingProperties.containsKey("include.default")) {
+        filemappingProperties.put("include.default", "true");
+      }
+
+      File filemappingPropertiesFile = new File(targetDirectory, "file-mapping.properties");
+      try {
+        fos = new FileOutputStream(filemappingPropertiesFile);
+        filemappingProperties.store(fos, null);
+      } catch (IOException e) {
+        throw new MojoExecutionException("Could not process file-mapping.properties", e);
+      } finally {
+        IOUtil.close(fos);
+      }
+      zipArchiver.addFile(filemappingPropertiesFile, "file-mapping.properties");
     }
 
     File ampFile = new File(targetDirectory, project.getBuild().getFinalName() + ".amp");

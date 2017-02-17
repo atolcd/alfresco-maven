@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -90,6 +91,9 @@ public class AmpMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project.build.sourceEncoding}")
   private String encoding;
 
+  @Parameter(defaultValue = "${project.build.filters}")
+  private List<String> filters;
+
   @Parameter(defaultValue = "false")
   private boolean shareModule;
 
@@ -140,7 +144,7 @@ public class AmpMojo extends AbstractMojo {
       }
 
       resourcesExecution = new MavenResourcesExecution(project.getResources(), targetConfigDirectory, project,
-          encoding, null, Collections.<String>emptyList(), session);
+          encoding, filters, Collections.<String>emptyList(), session);
       resourcesFiltering.filterResources(resourcesExecution);
     } catch (MavenFilteringException e) {
       throw new MojoExecutionException("Could not filter resources", e);

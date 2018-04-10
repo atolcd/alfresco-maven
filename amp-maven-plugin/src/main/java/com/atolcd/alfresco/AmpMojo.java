@@ -76,6 +76,9 @@ public class AmpMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project.basedir}/src/main/licenses")
   private File licensesDirectory;
 
+  @Parameter(defaultValue = "${project.basedir}/src/main/web-fragment.xml")
+  private File webFragmentFile;
+
   @Parameter
   private File rootDirectory;
 
@@ -192,6 +195,11 @@ public class AmpMojo extends AbstractMojo {
     archiver.setArchiver(jarArchiver);
     archiver.setOutputFile(jarFile);
     jarArchiver.addDirectory(outputDirectory, new String[] { "**/*.class" }, new String[] { "org/alfresco/**/*.class" });
+
+    if (webFragmentFile.exists()) {
+      jarArchiver.addFile(webFragmentFile, "META-INF/web-fragment.xml");
+    }
+
     MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
     try {
       archiver.createArchive(session, project, archive);

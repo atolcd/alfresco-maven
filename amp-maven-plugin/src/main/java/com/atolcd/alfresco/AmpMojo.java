@@ -218,10 +218,11 @@ public class AmpMojo extends AbstractMojo {
     FileSet alfrescoJava = new FileSet();
     alfrescoJava.setDirectory(outputDirectory.getAbsolutePath());
     alfrescoJava.addInclude("org/alfresco/**/*.class");
+    alfrescoJava.addInclude("org/apache/**/*.class");
     alfrescoJava.addExclude("**/*");
     FileSetManager fileSetManager = new FileSetManager();
     fileSetManager.getIncludedFiles(alfrescoJava);
-    zipArchiver.addDirectory(outputDirectory, "WEB-INF/classes/", new String[] { "org/alfresco/**/*.class" }, null);
+    zipArchiver.addDirectory(outputDirectory, "WEB-INF/classes/", new String[] { "org/alfresco/**/*.class", "org/apache/**/*.class" }, null);
     if (fileSetManager.getIncludedFiles(alfrescoJava).length > 0) {
       if (filemappingProperties == null) {
         filemappingProperties = new Properties();
